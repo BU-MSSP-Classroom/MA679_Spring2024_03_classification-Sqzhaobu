@@ -225,15 +225,20 @@ Q1. What metric will you use? Why?
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+#fit a null model
+fit_null = glm(SURVIVED_bin~1, family=binomial, data= Train_COVID)
+summary(fit_null)
 ```
-
+```{r,echo=show_code}
+pred_null = predict(fit_null, Test_COVID, type="response")
+null_pred <- ifelse(pred_null > 0.5,1,0) # Probability check
+CM_n= table(Test_COVID$SURVIVED_bin, null_pred)
+print(CM_n)
+```
 Your answer:
 
 ~~~
-Please write your answer in full sentences.
-
+We use confusion matrix. 
 
 ~~~
 
@@ -241,7 +246,8 @@ Q2. What was your best performing model?
 
 Your code:
 ```{r,echo=TRUE}
-#
+fit_1 = glm(SURVIVED_bin~SEX + PATIENT_TYPE + INTUBED + PNEUMONIA + AGE + PREGNANT, family=binomial, data= Train_COVID)
+summary(fit_1)
 #
 ```
 
@@ -296,44 +302,48 @@ In this problem, you will develop a model to predict whether a given car gets hi
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+library(ISLR2)
+median_A = median(Auto$mpg)
+mpg01 = ifelse(Auto$mpg > median_A, 1, 0)
+Auto_ = data.frame(mpg01, Auto)
 ```
 
 Your answer:
 
-~~~
-Please write your answer in full sentences.
-
-
-~~~
 
 
 (b) Explore the data graphically in order to investigate the association between `mpg01` and the other features. Which other features seem most likely to be useful in predicting `mpg01`? Scatterplots and boxplots may be useful tools to answer this question. Describe your findings.
+```{r}
+pairs(subset(Auto, select = -name))
+```
 
 (c) Split the data into a training set and a test set.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+size<-floor(dim(Auto_)[1]*0.3)
+set.seed(1257)
+samp_idx<-sample(1:dim(Auto_)[1],size,FALSE)
+Train_Auto<- Auto_[samp_idx,]
+Test_Auto <- Auto_[-samp_idx,]
+# Sanity check
+table(Train_Auto$mpg01)/nrow(Train_Auto)
+table(Test_Auto$mpg01)/nrow(Test_Auto)
 ```
 
+
 Your answer:
-
-~~~
-Please write your answer in full sentences.
-
-
-~~~
 
 
 (d) Perform LDA on the training data in order to predict `mpg01` using the variables that seemed most associated with `mpg01` in (b). What is the test error of the model obtained?
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+library(MASS)
+lda.fit <- lda(mpg01 ~ cylinders + displacement + horsepower + weight+ acceleration + year+ origin, data = Train_Auto)
+lda.fit
+
+
 ```
 
 Your answer:
@@ -349,8 +359,8 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+qda.fit <- qda(mpg01 ~ cylinders + displacement + horsepower + weight+ acceleration + year+ origin, data = Train_Auto)
+qda.fit
 ```
 
 Your answer:
@@ -366,8 +376,8 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
-#
+log_fit = glm(mpg01 ~ cylinders + displacement + horsepower + weight+ acceleration + year+ origin, family = 'binomial',  data = Train_Auto)
+log_fit
 ```
 
 Your answer:
@@ -383,7 +393,9 @@ Please write your answer in full sentences.
 
 Your code:
 ```{r,echo=TRUE}
-#
+library(e1071)
+nb.fit <- naiveBayes(mpg01 ~ cylinders + displacement + horsepower + weight+ acceleration + year+ origin, data = Train_Auto)
+nb.fit
 #
 ```
 
